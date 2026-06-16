@@ -1,35 +1,74 @@
 # Sheet Collection
 
-Typed Collection API for Google Sheets and Google Apps Script.
+Google Sheets collections for Google Apps Script.
 
-Transform spreadsheets into collections of typed documents using a simple CRUD API inspired by MongoDB.
+Work with spreadsheet data as JavaScript objects instead of manually handling rows, ranges and column indexes.
+
+```javascript
+const db = SheetCollection.connect();
+
+const clients = db.collection("clients");
+
+clients.insert({
+  name: "John Doe",
+  email: "john@email.com"
+});
+
+Logger.log(clients.findAll());
+```
+
+---
+
+## Why?
+
+Google Apps Script often leads to code like this:
+
+```javascript
+const sheet = SpreadsheetApp
+  .getActiveSpreadsheet()
+  .getSheetByName("clients");
+
+const values = sheet
+  .getDataRange()
+  .getValues();
+```
+
+With Sheet Collection:
+
+```javascript
+const clients =
+  db.collection("clients");
+
+const data =
+  clients.findAll();
+```
+
+Focus on your data, not spreadsheet plumbing.
 
 ---
 
 ## Features
 
-* Typed collections with TypeScript generics
-* Google Sheets as a document database
-* In-memory driver for testing
-* Automatic sheet creation
+* Collection-based API
+* Automatic header management
+* Google Sheets storage
+* Memory driver for testing
 * CRUD operations
-* Driver-based architecture
+* Driver architecture
 * Google Apps Script compatible
-* Zero external dependencies at runtime
+* Zero runtime dependencies
+* TypeScript-first development
 
 ---
 
 ## Installation
 
-### Google Apps Script
+### Google Apps Script Library
 
-Import the generated bundle into your Apps Script project.
-
-After deployment, the library exposes:
+Add the library to your Apps Script project and use:
 
 ```javascript
-SheetDB
-connect
+const db = SheetCollection.connect();
 ```
 
 ---
@@ -39,15 +78,15 @@ connect
 ### Connect to Active Spreadsheet
 
 ```javascript
-const db = SheetCollection.SheetDB.connect({
+const db = SheetCollection.connect({
   source: "google"
 });
 ```
 
-### Connect to Specific Spreadsheet
+### Connect to a Specific Spreadsheet
 
 ```javascript
-const db = SheetCollection.SheetDB.connect({
+const db = SheetCollection.connect({
   source: "google",
   properties: {
     spreadsheetId: "YOUR_SPREADSHEET_ID"
@@ -57,52 +96,42 @@ const db = SheetCollection.SheetDB.connect({
 
 ---
 
-## Creating a Collection
+## Collections
 
-```typescript
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+A collection maps directly to a spreadsheet tab.
 
-const users =
-  db.collection<User>("users");
+```javascript
+const clients =
+  db.collection("clients");
 ```
 
-If the sheet does not exist, it will be created automatically.
+If the sheet does not exist, it is created automatically.
 
 ---
 
 ## Insert Documents
 
-```typescript
-users.insert({
+```javascript
+clients.insert({
   id: 1,
-  name: "Eduardo",
-  email: "eduardo@email.com"
+  name: "John Doe",
+  email: "john@email.com"
 });
 ```
 
-The first insertion automatically generates the header row.
+The first insertion automatically creates the header row.
 
-Result:
-
-| id | name    | email                                         |
-| -- | ------- | --------------------------------------------- |
-| 1  | Eduardo | [eduardo@email.com](mailto:eduardo@email.com) |
+| id | name     | email                                   |
+| -- | -------- | --------------------------------------- |
+| 1  | John Doe | [john@email.com](mailto:john@email.com) |
 
 ---
 
-## Find All Documents
+## Find All
 
-```typescript
-const documents =
-  users.findAll();
-
-Logger.log(
-  JSON.stringify(documents)
-);
+```javascript
+const data =
+  clients.findAll();
 ```
 
 Output:
@@ -111,8 +140,8 @@ Output:
 [
   {
     "id": 1,
-    "name": "Eduardo",
-    "email": "eduardo@email.com"
+    "name": "John Doe",
+    "email": "john@email.com"
   }
 ]
 ```
@@ -121,66 +150,45 @@ Output:
 
 ## Find By Id
 
-```typescript
-const user =
-  users.findById(1);
-```
-
-Output:
-
-```json
-{
-  "id": 1,
-  "name": "Eduardo",
-  "email": "eduardo@email.com"
-}
+```javascript
+const client =
+  clients.findById(1);
 ```
 
 ---
 
-## Update Document
+## Update
 
-```typescript
-users.update(
+```javascript
+clients.update(
   1,
   {
-    name: "Teste"
+    name: "Updated Name"
   }
 );
 ```
 
 ---
 
-## Delete Document
+## Delete
 
-```typescript
-users.delete(1);
+```javascript
+clients.delete(1);
 ```
 
 ---
 
 # Drivers
 
-The library uses a driver-based architecture.
+Sheet Collection supports multiple storage backends.
 
-## Google Driver
+---
 
-Uses Google Sheets as the storage engine.
+## Google Sheets Driver
 
-```typescript
-const db = SheetCollection.SheetDB.connect({
+```javascript
+const db = SheetCollection.connect({
   source: "google"
-});
-```
-
-or
-
-```typescript
-const db = SheetCollection.SheetDB.connect({
-  source: "google",
-  properties: {
-    spreadsheetId: "abc123"
-  }
 });
 ```
 
@@ -188,29 +196,45 @@ const db = SheetCollection.SheetDB.connect({
 
 ## Memory Driver
 
-Useful for tests and local development.
+Useful for testing and local development.
 
-```typescript
-const db = SheetCollection.SheetDB.connect({
+```javascript
+const db = SheetCollection.connect({
   source: "memory"
 });
 ```
 
 Example:
 
-```typescript
-const users =
-  db.collection<User>("users");
+```javascript
+const clients =
+  db.collection("clients");
 
-users.insert({
+clients.insert({
   id: 1,
   name: "Test User"
 });
 
 Logger.log(
-  JSON.stringify(users.findAll())
+  JSON.stringify(
+    clients.findAll()
+  )
 );
 ```
+
+---
+
+# Testing
+
+The Memory Driver allows testing business logic without Google Sheets.
+
+```javascript
+const db = SheetCollection.connect({
+  source: "memory"
+});
+```
+
+This makes unit testing significantly easier than relying on SpreadsheetApp mocks.
 
 ---
 
@@ -243,149 +267,44 @@ Google     Memory
 
 ---
 
-## Core Components
-
-### SheetDB
-
-Main entry point of the library.
-
-Responsible for:
-
-* Creating connections
-* Managing collections
-* Accessing sources
-
-### Collection<T>
-
-Typed collection abstraction.
-
-Provides:
-
-* insert()
-* findAll()
-* findById()
-* update()
-* delete()
-
-### SheetAdapter
-
-Responsible for translating between:
-
-```text
-Spreadsheet Rows
-       ↕
-TypeScript Objects
-```
-
-### RowMapper
-
-Converts:
-
-```typescript
-["id", "name"]
-[1, "John"]
-```
-
-into:
-
-```typescript
-{
-  id: 1,
-  name: "John"
-}
-```
-
-and vice versa.
-
----
-
-# Extending the Library
-
-To create a new storage provider:
-
-### Create a SourceDriver
-
-```typescript
-export interface SourceDriver {
-
-  getSheet(
-    name: string
-  ): SheetSource;
-
-  getOrCreateSheet(
-    name: string
-  ): SheetSource;
-
-}
-```
-
-### Create a SheetSource
-
-```typescript
-export interface SheetSource {
-
-  getValues(): unknown[][];
-
-  appendRow(
-    values: unknown[]
-  ): void;
-
-  setValues(
-    values: unknown[][]
-  ): void;
-
-}
-```
-
-### Register the Driver
-
-```typescript
-private readonly DRIVERS = {
-  google: GASSourceDriver,
-  memory: MemorySourceDriver,
-  myDriver: MySourceDriver
-};
-```
-
----
-
-# Development
-
-## Build
-
-```bash
-npm run build
-```
-
-## Run Tests
-
-```bash
-npm test
-```
-
-## Validate Distribution
-
-```bash
-npm run verify
-```
-
-## Push to Apps Script
-
-```bash
-npm run push
-```
-
----
-
 # Roadmap
 
+### Data
+
 * Custom primary keys
-* Query filters
-* Sorting
-* Pagination
-* Transactions
+* Auto-generated IDs
 * Batch operations
+* Upsert
+* Query filters
+
+### Spreadsheet
+
+* Column types
+* Checkbox columns
+* Date formatting
+* Currency formatting
+* Dropdown validation
+* Formula helpers
+* Table presets
+
+### Platform
+
 * Driver registration API
-* Schema validation
-* Indexes
+* Additional storage providers
 * Collection hooks
+
+---
+
+# Contributing
+
+Issues, feature requests and pull requests are welcome.
+
+If you have ideas for improving the developer experience in Google Apps Script, open a discussion or create an issue.
+
+---
+
+# License
+
+MIT License.
+
+---
