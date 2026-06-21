@@ -102,6 +102,47 @@ describe('Collection', () => {
     ]);
   });
 
+  it('should not insert a document with duplicated manual id', () => {
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<User>('users');
+
+    users.insert({
+      id: '1',
+      name: 'Eduardo'
+    });
+
+    expect(() => {
+      users.insert({
+        id: '1',
+        name: 'Maria'
+      });
+    }).toThrowError("ID '1' is already in use.");
+  });
+
+  it('should not insert a document with duplicated numeric/string id', () => {
+    interface NumericUser {
+      id: number;
+      name: string;
+    }
+
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<NumericUser>('users');
+
+    users.insert({
+      id: 1,
+      name: 'Eduardo'
+    });
+
+    expect(() => {
+      users.insert({
+        id: 1,
+        name: 'Maria'
+      });
+    }).toThrow("ID '1' is already in use.");
+  });
+
   it('should find by id', () => {
     const db = createMemoryDatabase();
 

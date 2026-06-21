@@ -32,9 +32,11 @@ export class SheetAdapter {
   ): T | null {
     return (
       this.findAll<Record<string, unknown>>()
-        .find(
-          document =>
-            document[primaryKey] === id
+        .find(document =>
+          this.areIdsEqual(
+            document[primaryKey],
+            id
+          )
         ) as T | undefined
     ) ?? null;
   }
@@ -205,11 +207,29 @@ export class SheetAdapter {
     id: unknown,
     ids: unknown[]
   ): boolean {
-    const normalized = String(id);
-
-    return ids.some(
-      existing => String(existing) === normalized
+    return ids.some(existing =>
+      this.areIdsEqual(existing, id)
     );
+  }
+
+  private areIdsEqual(
+    left: unknown,
+    right: unknown
+  ): boolean {
+    if (left === right) {
+      return true;
+    }
+
+    if (
+      left === undefined ||
+      left === null ||
+      right === undefined ||
+      right === null
+    ) {
+      return false;
+    }
+
+    return String(left) === String(right);
   }
 
   update<T>(
@@ -239,7 +259,10 @@ export class SheetAdapter {
             row
           );
 
-        return current[primaryKey] === id;
+        return this.areIdsEqual(
+          current[primaryKey],
+          id
+        );
       });
 
     if (rowIndex === -1) {
@@ -299,7 +322,10 @@ export class SheetAdapter {
             row
           );
 
-        return current[primaryKey] !== id;
+        return !this.areIdsEqual(
+          current[primaryKey],
+          id
+        );
       });
 
 
