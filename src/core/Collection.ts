@@ -6,6 +6,11 @@ type InsertDocument<T> = T extends { id: infer V }
   ? Omit<T, 'id'> & Partial<Pick<T, 'id'>>
   : T & Partial<Record<'id', unknown>>;
 
+/**
+ * @preserve
+ * Represents a typed collection backed by a sheet.
+ * Use this class to perform CRUD operations on a named collection.
+ */
 export class Collection<T> {
 
   private readonly adapter: SheetAdapter;
@@ -16,10 +21,21 @@ export class Collection<T> {
     this.adapter = new SheetAdapter(source);
   }
 
+  /**
+   * @preserve
+   * Retorna todos os documentos da coleção.
+   * @returns Lista de documentos.
+   */
   findAll(): T[] {
     return this.adapter.findAll<T>();
   }
 
+  /**
+   * @preserve
+   * Busca um documento pelo valor da chave primária `id`.
+   * @param id Valor do identificador.
+   * @returns Documento encontrado ou `null`.
+   */
   findById(
     id: unknown
   ): T | null {
@@ -28,6 +44,11 @@ export class Collection<T> {
     );
   }
 
+  /**
+   * @preserve
+   * Insere um documento na coleção.
+   * @param document Documento a ser inserido.
+   */
   insert(
     document: InsertDocument<T>
   ): void {
@@ -36,6 +57,16 @@ export class Collection<T> {
     );
   }
 
+  /**
+   * @preserve
+   * Insere múltiplos documentos em uma única operação.
+   *
+   * Cria cabeçalhos automaticamente quando necessário,
+   * preserva a ordem dos documentos e suporta geração
+   * automática de IDs.
+   *
+   * @param documents Lista de documentos a serem inseridos.
+   */
   insertMany(
     documents: InsertDocument<T>[]
   ): void {
@@ -44,6 +75,13 @@ export class Collection<T> {
     );
   }
 
+  /**
+   * @preserve
+   * Atualiza um documento existente pelo `id`.
+   * @param id Identificador do documento.
+   * @param document Campos a serem atualizados.
+   * @returns `true` se o documento foi atualizado.
+   */
   update(
     id: unknown,
     document: Partial<T>
@@ -55,6 +93,12 @@ export class Collection<T> {
     );
   }
 
+  /**
+   * @preserve
+   * Deleta um documento existente pelo `id`.
+   * @param id Identificador do documento.
+   * @returns `true` se o documento foi deletado.
+   */
   delete(
     id: unknown
   ): boolean {
