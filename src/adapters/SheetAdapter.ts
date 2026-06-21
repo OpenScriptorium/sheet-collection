@@ -44,7 +44,11 @@ export class SheetAdapter {
   ): void {
     const values = this.source.getValues();
 
-    const record = document as Record<string, unknown>;
+    const record =
+      this.ensureDocumentHasId(
+        document,
+        values
+      );
 
     if (this.source.getLastRow() === 0) {
       const headers = Object.keys(record);
@@ -52,7 +56,7 @@ export class SheetAdapter {
       this.source.setValues([
         headers,
         RowMapper.toRow(
-          document,
+          record,
           headers
         )
       ]);
@@ -62,11 +66,149 @@ export class SheetAdapter {
 
     const headers = values[0].map(String);
 
+    if (!headers.includes('id')) {
+      headers.push('id');
+
+      const rows = values
+        .slice(1)
+        .map(row => [...row, undefined]);
+
+      this.source.setValues([
+        headers,
+        ...rows
+      ]);
+    }
+
     this.source.appendRow(
       RowMapper.toRow(
-        document,
+        record,
         headers
       )
+    );
+  }
+
+  private ensureDocumentHasId<T>(
+    document: T,
+    values: unknown[][]
+  ): Record<string, unknown> {
+    const record = {
+      ...document
+    } as Record<string, unknown>;
+
+    const headers = values.length === 0
+      ? []
+      : values[0].map(String);
+
+    if (this.hasId(record)) {
+      this.ensureUniqueId(
+        record,
+        values,
+        headers
+      );
+
+      return record;
+    }
+
+    record.id = this.generateId(
+      values,
+      headers
+    );
+
+    return record;
+  }
+
+  private hasId(
+    record: Record<string, unknown>
+  ): boolean {
+    return (
+      Object.prototype.hasOwnProperty.call(
+        record,
+        'id'
+      ) &&
+      record.id !== undefined &&
+      record.id !== null
+    );
+  }
+
+  private ensureUniqueId(
+    record: Record<string, unknown>,
+    values: unknown[][],
+    headers: string[]
+  ): void {
+    const idIndex = headers.indexOf('id');
+
+    if (idIndex === -1) {
+      return;
+    }
+
+    const existingIds = values
+      .slice(1)
+      .map(row => row[idIndex]);
+
+    if (this.isIdUsed(record.id, existingIds)) {
+      throw new Error(
+        `ID '${record.id}' is already in use.`
+      );
+    }
+  }
+
+  private generateId(
+    values: unknown[][],
+    headers: string[]
+  ): number {
+    if (values.length === 0 || headers.indexOf('id') === -1) {
+      return 1;
+    }
+
+    const idIndex = headers.indexOf('id');
+
+    const existingIds = values
+      .slice(1)
+      .map(row => row[idIndex]);
+
+    const occupied = new Set(existingIds);
+    const stringOccupied = new Set(existingIds.map(String));
+
+    const numericValues = existingIds
+      .map(id => {
+        if (typeof id === 'number') {
+          return id;
+        }
+
+        if (typeof id === 'string') {
+          const parsed = Number(id);
+          return Number.isFinite(parsed)
+            ? parsed
+            : NaN;
+        }
+
+        return NaN;
+      })
+      .filter(Number.isFinite);
+
+    let candidate =
+      numericValues.length > 0
+        ? Math.max(...numericValues) + 1
+        : 1;
+
+    while (
+      occupied.has(candidate) ||
+      stringOccupied.has(String(candidate))
+    ) {
+      candidate += 1;
+    }
+
+    return candidate;
+  }
+
+  private isIdUsed(
+    id: unknown,
+    ids: unknown[]
+  ): boolean {
+    const normalized = String(id);
+
+    return ids.some(
+      existing => String(existing) === normalized
     );
   }
 

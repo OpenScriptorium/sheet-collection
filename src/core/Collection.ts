@@ -2,6 +2,10 @@ import { SheetAdapter } from "../adapters/SheetAdapter";
 import { RowMapper } from "../mappers/RowMapper";
 import { SheetSource } from "../sources/SheetSource";
 
+type InsertDocument<T> = T extends { id: infer V }
+  ? Omit<T, 'id'> & Partial<Pick<T, 'id'>>
+  : T & Partial<Record<'id', unknown>>;
+
 export class Collection<T> {
 
   private readonly adapter: SheetAdapter;
@@ -25,7 +29,7 @@ export class Collection<T> {
   }
 
   insert(
-    document: T
+    document: InsertDocument<T>
   ): void {
     this.adapter.insert(
       document
