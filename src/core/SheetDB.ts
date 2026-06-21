@@ -16,10 +16,10 @@ export class SheetDB {
 
   /**
    * @preserve
-   * Cria uma conexão com uma fonte de dados.
+   * Creates a connection to a data source.
    *
-   * @param config Configuração da conexão.
-   * @returns Instância do banco conectado.
+   * @param config Connection configuration.
+   * @returns Connected database instance.
    *
    * @example
    * const db = SheetDB.connect({
@@ -38,14 +38,14 @@ export class SheetDB {
 
   /**
    * @preserve
-   * Obtém uma coleção tipada.
+   * Gets a typed collection.
    *
-   * Caso a coleção não exista,
-   * ela será criada automaticamente.
+   * If the collection does not exist,
+   * it is created automatically.
    *
-   * @typeParam T Tipo dos documentos armazenados.
-   * @param name Nome da coleção.
-   * @returns Coleção tipada para a aba informada.
+   * @typeParam T Type of stored documents.
+   * @param name Collection name.
+   * @returns Typed collection for the requested sheet.
    *
    * @example
    * interface User {
@@ -67,13 +67,12 @@ export class SheetDB {
   }
 
   /**
-   * Obtém uma aba existente.
+   * Gets an existing sheet.
    *
-   * Lança uma exceção caso a aba
-   * não seja encontrada.
+   * Throws if the sheet is not found.
    *
-   * @param name Nome da aba.
-   * @returns Fonte de dados da aba.
+   * @param name Sheet name.
+   * @returns Sheet source.
    */
   getSheet(
     name: string
@@ -82,11 +81,11 @@ export class SheetDB {
   }
 
   /**
-   * Obtém uma aba existente ou cria
-   * uma nova caso ela não exista.
+   * Gets an existing sheet or creates
+   * a new one if it does not exist.
    *
-   * @param name Nome da aba.
-   * @returns Fonte de dados da aba.
+   * @param name Sheet name.
+   * @returns Sheet source.
    */
   getOrCreateSheet(
     name: string

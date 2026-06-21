@@ -23,8 +23,8 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Retorna todos os documentos da coleção.
-   * @returns Lista de documentos.
+   * Returns all documents in the collection.
+   * @returns List of documents.
    */
   findAll(): T[] {
     return this.adapter.findAll<T>();
@@ -32,9 +32,9 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Busca um documento pelo valor da chave primária `id`.
-   * @param id Valor do identificador.
-   * @returns Documento encontrado ou `null`.
+   * Finds a document by its primary key `id`.
+   * @param id Identifier value.
+   * @returns The found document or `null`.
    */
   findById(
     id: unknown
@@ -46,8 +46,8 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Insere um documento na coleção.
-   * @param document Documento a ser inserido.
+   * Inserts a document into the collection.
+   * @param document Document to insert.
    */
   insert(
     document: InsertDocument<T>
@@ -59,13 +59,13 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Insere múltiplos documentos em uma única operação.
+   * Inserts multiple documents in a single operation.
    *
-   * Cria cabeçalhos automaticamente quando necessário,
-   * preserva a ordem dos documentos e suporta geração
-   * automática de IDs.
+   * Automatically creates headers when needed,
+   * preserves document order, and supports automatic
+   * ID generation.
    *
-   * @param documents Lista de documentos a serem inseridos.
+   * @param documents List of documents to insert.
    */
   insertMany(
     documents: InsertDocument<T>[]
@@ -77,10 +77,10 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Atualiza um documento existente pelo `id`.
-   * @param id Identificador do documento.
-   * @param document Campos a serem atualizados.
-   * @returns `true` se o documento foi atualizado.
+   * Updates an existing document by `id`.
+   * @param id Document identifier.
+   * @param document Fields to update.
+   * @returns `true` if the document was updated.
    */
   update(
     id: unknown,
@@ -95,9 +95,9 @@ export class Collection<T> {
 
   /**
    * @preserve
-   * Deleta um documento existente pelo `id`.
-   * @param id Identificador do documento.
-   * @returns `true` se o documento foi deletado.
+   * Deletes an existing document by `id`.
+   * @param id Document identifier.
+   * @returns `true` if the document was deleted.
    */
   delete(
     id: unknown
