@@ -18,6 +18,17 @@ users.insert({
   name: 'Maria'
 });
 
+assert.throws(
+  () => {
+    users.insert({
+      id: '1',
+      name: 'Maria'
+    });
+  },
+  /ID '1' is already in use\./,
+  'should not allow inserting duplicate id'
+);
+
 const allReg = users.findAll();
 console.log('findAll', allReg)
 assert.equal(allReg.length, 2);
