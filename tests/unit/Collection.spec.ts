@@ -26,6 +26,82 @@ describe('Collection', () => {
 
   });
 
+  it('should generate id automatically when missing', () => {
+    interface NumericUser {
+      id: number;
+      name: string;
+    }
+
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<NumericUser>('users');
+
+    users.insert({
+      name: 'Maria'
+    });
+
+    expect(
+      users.findAll()
+    ).toEqual([
+      {
+        id: 1,
+        name: 'Maria'
+      }
+    ]);
+  });
+
+  it('should generate unique ids for consecutive inserts', () => {
+    interface NumericUser {
+      id: number;
+      name: string;
+    }
+
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<NumericUser>('users');
+
+    users.insert({
+      name: 'Maria'
+    });
+
+    users.insert({
+      name: 'Ana'
+    });
+
+    expect(
+      users.findAll()
+    ).toEqual([
+      {
+        id: 1,
+        name: 'Maria'
+      },
+      {
+        id: 2,
+        name: 'Ana'
+      }
+    ]);
+  });
+
+  it('should preserve manual id when provided', () => {
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<User>('users');
+
+    users.insert({
+      id: '10',
+      name: 'Maria'
+    });
+
+    expect(
+      users.findAll()
+    ).toEqual([
+      {
+        id: '10',
+        name: 'Maria'
+      }
+    ]);
+  });
+
   it('should find by id', () => {
     const db = createMemoryDatabase();
 
