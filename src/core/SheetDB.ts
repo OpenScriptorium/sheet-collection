@@ -5,22 +5,9 @@ import { Collection } from "./Collection";
 import { Connection } from "./Connection";
 
 /**
- * Ponto de entrada principal da biblioteca.
- *
- * Permite conectar diferentes fontes de dados
- * (Google Sheets, memória, etc.) e manipular
- * coleções tipadas de documentos.
- *
- * @example
- * const db = SheetDB.connect({
- *   source: 'google',
- *   properties: {
- *     spreadsheetId: 'abc123'
- *   }
- * });
- *
- * const users =
- *   db.collection<User>('users');
+ * @preserve
+ * SheetDB is the main entrypoint for connecting to a storage source.
+ * It exposes a typed collection API over Google Sheets and memory drivers.
  */
 export class SheetDB {
   private constructor(
@@ -28,6 +15,7 @@ export class SheetDB {
   ) { }
 
   /**
+   * @preserve
    * Cria uma conexão com uma fonte de dados.
    *
    * @param config Configuração da conexão.
@@ -49,6 +37,7 @@ export class SheetDB {
   }
 
   /**
+   * @preserve
    * Obtém uma coleção tipada.
    *
    * Caso a coleção não exista,
@@ -56,6 +45,7 @@ export class SheetDB {
    *
    * @typeParam T Tipo dos documentos armazenados.
    * @param name Nome da coleção.
+   * @returns Coleção tipada para a aba informada.
    *
    * @example
    * interface User {
@@ -83,6 +73,7 @@ export class SheetDB {
    * não seja encontrada.
    *
    * @param name Nome da aba.
+   * @returns Fonte de dados da aba.
    */
   getSheet(
     name: string
@@ -95,6 +86,7 @@ export class SheetDB {
    * uma nova caso ela não exista.
    *
    * @param name Nome da aba.
+   * @returns Fonte de dados da aba.
    */
   getOrCreateSheet(
     name: string

@@ -89,6 +89,163 @@ export class SheetAdapter {
     );
   }
 
+  insertMany<T>(
+    documents: T[]
+  ): void {
+    if (documents.length === 0) {
+      return;
+    }
+
+    const values = this.source.getValues();
+    const currentHeaders = values.length === 0
+      ? []
+      : values[0].map(String);
+
+    const headers = this.mergeHeaders(
+      currentHeaders,
+      documents
+    );
+
+    const usedIds = new Set<string>(
+      currentHeaders.includes('id')
+        ? values
+          .slice(1)
+          .map(row => String(row[currentHeaders.indexOf('id')]))
+        : []
+    );
+
+    const records = documents.map(document => {
+      const record = { ...document } as Record<string, unknown>;
+
+      if (this.hasId(record)) {
+        const idString = String(record.id);
+
+        if (usedIds.has(idString)) {
+          throw new Error(
+            `ID '${record.id}' is already in use.`
+          );
+        }
+
+        usedIds.add(idString);
+
+        return record;
+      }
+
+      const generatedId = this.generateNextId(
+        values,
+        currentHeaders,
+        usedIds
+      );
+
+      record.id = generatedId;
+      usedIds.add(String(generatedId));
+
+      return record;
+    });
+
+    if (values.length === 0) {
+      this.source.setValues([
+        headers,
+        ...records.map(record =>
+          RowMapper.toRow(record, headers)
+        )
+      ]);
+
+      return;
+    }
+
+    const updatedRows = values
+      .slice(1)
+      .map(row => {
+        const normalized = [...row];
+
+        while (normalized.length < headers.length) {
+          normalized.push(undefined);
+        }
+
+        return normalized;
+      });
+
+    this.source.setValues([
+      headers,
+      ...updatedRows,
+      ...records.map(record =>
+        RowMapper.toRow(record, headers)
+      )
+    ]);
+  }
+
+  private mergeHeaders<T>(
+    currentHeaders: string[],
+    documents: T[]
+  ): string[] {
+    const headers = [...currentHeaders];
+
+    documents.forEach(document => {
+      Object.keys(document as Record<string, unknown>)
+        .forEach(header => {
+          if (!headers.includes(header)) {
+            headers.push(header);
+          }
+        });
+    });
+
+    const needsIdHeader =
+      !headers.includes('id') &&
+      documents.some(document =>
+        !this.hasId(document as Record<string, unknown>)
+      );
+
+    if (needsIdHeader) {
+      headers.push('id');
+    }
+
+    return headers;
+  }
+
+  private generateNextId(
+    values: unknown[][],
+    headers: string[],
+    usedIds: Set<string>
+  ): number {
+    let candidate = 1;
+
+    if (headers.indexOf('id') !== -1) {
+      const idIndex = headers.indexOf('id');
+
+      const existingIds = values
+        .slice(1)
+        .map(row => row[idIndex]);
+
+      const numericValues = existingIds
+        .map(id => {
+          if (typeof id === 'number') {
+            return id;
+          }
+
+          if (typeof id === 'string') {
+            const parsed = Number(id);
+            return Number.isFinite(parsed)
+              ? parsed
+              : NaN;
+          }
+
+          return NaN;
+        })
+        .filter(Number.isFinite as (value: number) => boolean);
+
+      candidate = numericValues.length > 0
+        ? Math.max(...numericValues) + 1
+        : 1;
+    }
+
+    while (usedIds.has(String(candidate))) {
+      candidate += 1;
+    }
+
+    return candidate;
+  }
+
   private ensureDocumentHasId<T>(
     document: T,
     values: unknown[][]
