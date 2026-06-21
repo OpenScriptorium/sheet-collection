@@ -1,11 +1,19 @@
 # Sheet Collection
 
+> 📦 Available as a Google Apps Script Library
+>
+> **Script ID**
+>
+> `1uJFD2xU_Teb-lKbxPt5YpFqdl-6C_5GUQNVRLs8Ps3Kb0rjUCxabFXOj`
+
 Google Sheets collections for Google Apps Script.
 
 Work with spreadsheet data as JavaScript objects instead of manually handling rows, ranges and column indexes.
 
 ```javascript
-const db = SheetCollection.connect();
+const db = SheetCollection.connect({
+  source: "google"
+});
 
 const clients = db.collection("clients");
 
@@ -65,10 +73,35 @@ Focus on your data, not spreadsheet plumbing.
 
 ### Google Apps Script Library
 
-Add the library to your Apps Script project and use:
+1. Open your Google Apps Script project.
+2. Click **Libraries** in the left sidebar.
+3. Click **Add a library**.
+4. Paste the following Script ID:
+
+```text
+1uJFD2xU_Teb-lKbxPt5YpFqdl-6C_5GUQNVRLs8Ps3Kb0rjUCxabFXOj
+```
+
+5. Select the latest version.
+6. Use the default identifier:
 
 ```javascript
-const db = SheetCollection.connect();
+SheetCollection
+```
+
+7. Click **Add**.
+
+### Verify Installation
+
+```javascript
+function testLibrary() {
+
+  const db = SheetCollection.connect({
+    source: 'google'
+  });
+
+  Logger.log(db);
+}
 ```
 
 ---
