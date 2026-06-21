@@ -82,6 +82,66 @@ describe('Collection', () => {
     ]);
   });
 
+  it('should insert multiple documents in a single operation preserving order', () => {
+    interface NumericUser {
+      id: number;
+      name: string;
+      age?: number;
+    }
+
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<NumericUser>('users');
+
+    users.insertMany([
+      { name: 'Maria' },
+      { name: 'Ana', age: 24 },
+      { name: 'João' }
+    ]);
+
+    expect(
+      users.findAll()
+    ).toEqual([
+      {
+        id: 1,
+        name: 'Maria'
+      },
+      {
+        id: 2,
+        name: 'Ana',
+        age: 24
+      },
+      {
+        id: 3,
+        name: 'João'
+      }
+    ]);
+  });
+
+  it('should not insert documents with duplicated manual id in batch or existing rows', () => {
+    const db = createMemoryDatabase();
+    const users =
+      db.collection<User>('users');
+
+    users.insert({
+      id: '1',
+      name: 'Eduardo'
+    });
+
+    expect(() => {
+      users.insertMany([
+        {
+          id: '1',
+          name: 'Maria'
+        },
+        {
+          id: '2',
+          name: 'Ana'
+        }
+      ]);
+    }).toThrow("ID '1' is already in use.");
+  });
+
   it('should preserve manual id when provided', () => {
     const db = createMemoryDatabase();
     const users =

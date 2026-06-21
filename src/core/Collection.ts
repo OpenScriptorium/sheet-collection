@@ -36,6 +36,14 @@ export class Collection<T> {
     );
   }
 
+  insertMany(
+    documents: InsertDocument<T>[]
+  ): void {
+    this.adapter.insertMany(
+      documents
+    );
+  }
+
   update(
     id: unknown,
     document: Partial<T>
